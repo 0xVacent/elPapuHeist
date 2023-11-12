@@ -1,6 +1,8 @@
 //ACA INICIA EL CODIGO :3
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+//#include <windows.h>
 
 
 
@@ -53,9 +55,9 @@ typedef struct{
 }npc;
 
 //DECLARAMOS CONSTANTES
-const int fil = 27;
+const int fil = 28;
 const int col = 96;
-const int filMostrar = 27;
+const int filMostrar = 28;
 const int colMostrar = 96;
 
 //VARIABLE GLOGAL
@@ -115,7 +117,7 @@ int main(){
 
     int * currentOrientiation = 94;
 
-    int * tickRate = 0;
+    int * tickRate;
 
 
     printf("Elige tu raza\n\n");
@@ -137,7 +139,6 @@ int main(){
     }
 
 
-    system("pause");
     system("cls");
 
     for(;;){
@@ -300,7 +301,7 @@ player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation
         mapa[jugador.posY][jugador.posX - 1] = ' ';
         *currentOrientation = 62;
     }
-    if(GetKeyState('A') & 0x8000 && mapa[jugador.posY][jugador.posX - 1] != '#' mapa[jugador.posY][jugador.posX-1] !='$'){
+    if(GetKeyState('A') & 0x8000 && mapa[jugador.posY][jugador.posX - 1] != '#' && mapa[jugador.posY][jugador.posX-1] !='$'){
         jugador.posX = jugador.posX - 1;
         mapa[jugador.posY][jugador.posX + 1] = ' ';
         *currentOrientation = 60;
@@ -335,6 +336,30 @@ void fillMap(char mapa[fil][col]){
         }
     }
 //AHORA SI HACE LO QUE QUIERAS U-U
+
+    for(i = 2; i < 10; i++){
+        for(j =  0; j<34; j++){
+            mapa[i][j] = '#';
+        }
+    }
+
+    for(i = 18; i < fil -2; i++){
+        for(j =  0; j<34; j++){
+            mapa[i][j] = '#';
+        }
+    }
+
+        for(i = 2; i < 10; i++){
+        for(j =  62; j<col-2; j++){
+            mapa[i][j] = '#';
+        }
+    }
+
+    for(i = 18; i < fil -2; i++){
+        for(j =  62; j<col-2; j++){
+            mapa[i][j] = '#';
+        }
+    }
 
 
 }
@@ -409,11 +434,11 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
 
     if(mapa[enemy.posY][enemy.posX+1] !='<' && mapa[enemy.posY][enemy.posX+1] !='>' && mapa[enemy.posY][enemy.posX+1] !='v' && mapa[enemy.posY][enemy.posX+1] !='^' && mapa[enemy.posY][enemy.posX-1] !='<' && mapa[enemy.posY][enemy.posX-1] !='>' && mapa[enemy.posY][enemy.posX-1] !='v' && mapa[enemy.posY][enemy.posX-1] !='^'){
 
-    if(*tickRate % rand()%5 == 0 && *tickRate != 0){
-        if(enemy.posX < jugador.posX){
+    if(*tickRate % rand()%2 == 0 && *tickRate != 0){
+        if(enemy.posX < jugador.posX && mapa[enemy.posY][enemy.posX +1] != '#'){
             enemy.posX = enemy.posX +1;
             mapa[enemy.posY][enemy.posX-1] = ' ';
-        }else if(enemy.posX > jugador.posX){
+        }else if(enemy.posX > jugador.posX && mapa[enemy.posY][enemy.posX -1] != '#'){
             enemy.posX = enemy.posX -1;
             mapa[enemy.posY][enemy.posX+1] = ' ';
         }else{
@@ -423,7 +448,8 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     }
 }
 
-    *tickRate = *tickRate +1;
+    *tickRate = clock() / 120; //Tiempo del CPU dividido framerate * 2 porque si no aumenta demaciado rapido
+    //*tickRate = *tickRate +1;
 
     return enemy;
 
@@ -435,30 +461,26 @@ void shootingEnemy(char mapa[fil][col],npc enemy, int * tickRate, player jugador
             if(enemy.posY<jugador.posY)
             {
 
-                if(balaCreada == 0){
+                if(balaCreada == 0 && mapa[enemy.posY][enemy.posX] == mapa[enemy.posY][jugador.posX]){
                 bullet->posX = enemy.posX;
-                balaCreada =1;
+                bullet->posY = enemy.posY + 1;
+                balaCreada = 1;
             }
-                if(mapa[bullet->posY + 1][bullet->posX] != '#' && (bullet->posY + bullet->posX != jugador.posY + jugador.posX)){
+                if(mapa[bullet->posY + 1][bullet->posX] != '#' && mapa[bullet->posY][bullet->posX] != mapa[jugador.posY][jugador.posX]){
                 bullet->posY = bullet->posY + 1;
                 mapa[bullet->posY][bullet->posX] = 'o';
                 }else{
-                mapa[bullet->posY][bullet->posX] = ' ';
-                bullet->posY = enemy.posY + 1;
                 balaCreada = 0;
+                mapa[bullet->posY][bullet->posX] = ' ';
                 }
                 if(mapa[bullet->posY-1][bullet->posX] == 'o'){
                 mapa[bullet->posY-1][bullet->posX] = ' ';
                 }
-
         }
-
 }
-
 
 void collision(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proyectile * bullet)
 {
-    if()
 
 
 }
@@ -476,15 +498,15 @@ nodoListaN * inicLista()
     return nodo;
 }
 
-/*nodoArbolM * crearNodoArbol(sala sala)
+nodoArbolM * crearNodoArbol(sala sala)
 {
-    nodoArbol * aux= (nodoArbol*) malloc(sizeof(nodoArbol));
+    nodoArbolM * aux= (nodoArbolM*) malloc(sizeof(nodoArbolM));
     aux->sala=sala;
     aux->izq=NULL;
     aux->der=NULL;
     return aux;
 }
-*/
+
 nodoArbolM * irAsala(nodoArbolM * mapa, int numSala)
 {
 nodoArbolM * rta = iniciArbol();
