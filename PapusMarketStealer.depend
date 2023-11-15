@@ -11,7 +11,9 @@
 	<stdlib.h>
 	<stdio.h>
 
-1699755641 source:d:\descargas\papus_heist\main.c
+1700024780 source:d:\descargas\papus_heist\main.c
 	<stdlib.h>
 	<stdio.h>
+	<time.h>
+	<string.h>
 

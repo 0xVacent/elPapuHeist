@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 //#include <windows.h>
 
 
@@ -44,6 +45,16 @@ typedef struct{
     struct nodoListaN * sig;
 }nodoListaN;
 
+typedef struct Plantillas{
+    char nivel;
+    struct nodoPlantillas * listaMapas;
+}plantillas;
+
+typedef struct nodoPlantillas{
+    char mapa[28][96];
+    struct nodoPlantillas * sig;
+}nodoPlantillas;
+
 typedef struct{
     int posY;
     int posX;
@@ -59,10 +70,11 @@ const int fil = 28;
 const int col = 96;
 const int filMostrar = 28;
 const int colMostrar = 96;
-
+char nombreArchivo[20] = "mapas.dat";
 //VARIABLE GLOGAL
 
 int balaCreada  = 0;
+plantillas arregloPlantillas[3];
 
 //PROTOTIPADO
 player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation);
@@ -71,7 +83,9 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
 void fillMap(char mapa[fil][col]);
 void runPlayer(char mapa[fil][col], player jugador, int * currentOrietation);
 void shootingEnemy(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proyectile * bullet);
-
+nodoPlantillas * crearNodoPlantillas(char mapa[fil][col]);
+nodoPlantillas agreagarAlPpioPlantillas(nodoPlantillas * lista, nodoPlantillas * nuevoNodo);
+nodoPlantillas * inicarListaPlantilla();
 //MAIN
 
 int main(){
@@ -96,6 +110,9 @@ int main(){
 
 
     srand(time(NULL));
+    arregloPlantillas[0].nivel = '1';
+    arregloPlantillas[1].nivel = '2';
+    arregloPlantillas[2].nivel = '3';
     char mapa[fil][col];
     player jugador;
     jugador.posY = 12;
@@ -103,11 +120,33 @@ int main(){
     camara camarita;
     camarita.posY = fil/2;
     camarita.posX = col/2;
-    npc enemy;
-    enemy.posY = 2;
-    enemy.posX = 45;
-    enemy.id = 2;
-    enemy.orientation = 4;
+    npc enemys[5];
+
+    enemys[0].posY = rand() % ( 24 - 2) + 2;
+    enemys[0].posX = rand() % ( 94 - 2) + 2;
+    enemys[0].id = 1;
+    enemys[0].orientation = rand() % 4;
+/*
+    enemys[1].posY = rand() % ( 24 - 2) + 2;
+    enemys[1].posX = rand() % ( 94 - 2) + 2;
+    enemys[1].id=1;
+    enemys[1].orientation = rand() % 4;
+
+    enemys[2].posY = rand() % ( 24 - 2) + 2;
+    enemys[2].posX = rand() % ( 94 - 2) + 2;
+    enemys[2].id=1;
+    enemys[2].orientation = rand() % 4;
+
+    enemys[3].posY = rand() % ( 24 - 2) + 2;
+    enemys[3].posX = rand() % ( 94 - 2) + 2;
+    enemys[3].id=1;
+    enemys[3].orientation = rand() % 4;
+
+    enemys[4].posY = rand() % ( 24 - 2) + 2;
+    enemys[4].posX = rand() % ( 94 - 2) + 2;
+    enemys[4].id=1;
+    enemys[4].orientation = rand() % 4;
+*/
 
     memset(mapa, 32, sizeof(mapa));
 
@@ -141,12 +180,18 @@ int main(){
 
     system("cls");
 
+    leerArchivo();
+    system("pause");
+
+
     for(;;){
     printf("\x1b[H");
     system("");
     fillMap(mapa);
     jugador = runGameplay(mapa, jugador, &currentOrientiation);
-    enemy = runnpcs(mapa, enemy, &tickRate, jugador, &bullet);
+    for(int i = 0; i<1; i++){
+    enemys[i] = runnpcs(mapa, enemys[i], &tickRate, jugador, &bullet);
+    }
     camarita = camaraSiguiendoJugador(mapa, camarita, jugador);
     runPlayer(mapa, jugador, &currentOrientiation);
     runMap(mapa, camarita, jugador, &tickRate);
@@ -156,6 +201,8 @@ int main(){
     }
     return 0;
 }
+
+
 
 //MUESTRA EL MAPA
 
@@ -313,7 +360,7 @@ player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation
 //HACEMOS PAREDES
 
 void fillMap(char mapa[fil][col]){
-    int i,j;
+        int i,j;
  //PAREDES BORDER NO BORRAR BAJO NINGUNA SIRCUNSTANCIA :3
     for(i = 0; i < fil; i++){
         for(j = 0; j<2; j++){
@@ -335,32 +382,6 @@ void fillMap(char mapa[fil][col]){
             mapa[i][j] = '#';
         }
     }
-//AHORA SI HACE LO QUE QUIERAS U-U
-
-    for(i = 2; i < 10; i++){
-        for(j =  0; j<34; j++){
-            mapa[i][j] = '#';
-        }
-    }
-
-    for(i = 18; i < fil -2; i++){
-        for(j =  0; j<34; j++){
-            mapa[i][j] = '#';
-        }
-    }
-
-        for(i = 2; i < 10; i++){
-        for(j =  62; j<col-2; j++){
-            mapa[i][j] = '#';
-        }
-    }
-
-    for(i = 18; i < fil -2; i++){
-        for(j =  62; j<col-2; j++){
-            mapa[i][j] = '#';
-        }
-    }
-
 
 }
 
@@ -383,39 +404,39 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     if(*tickRate % 5 == 0){
 
     if(enemy.orientation == 1){
+    if(mapa[enemy.posY -1][enemy.posX] == '#' || mapa[enemy.posY -1][enemy.posX] == '$'){
+        enemy.orientation = 3;
+    }
     enemy.posY = enemy.posY -1;
     if(mapa[enemy.posY+1][enemy.posX] != '#'){
     mapa[enemy.posY+1][enemy.posX] = ' ';
     }
-    if(mapa[enemy.posY -1][enemy.posX] == '#'){
-        enemy.orientation = 3;
-    }
    }
     if(enemy.orientation == 3){
+    if(mapa[enemy.posY +1][enemy.posX] == '#' || mapa[enemy.posY -1][enemy.posX] == '$'){
+        enemy.orientation = 1;
+    }
     enemy.posY = enemy.posY +1;
     if(mapa[enemy.posY-1][enemy.posX] != '#'){
     mapa[enemy.posY-1][enemy.posX] = ' ';
     }
-    if(mapa[enemy.posY +1][enemy.posX] == '#'){
-        enemy.orientation = 1;
-    }
     }
     if(enemy.orientation == 2){
+    if(mapa[enemy.posY][enemy.posX +1] == '#' || mapa[enemy.posY -1][enemy.posX] == '$'){
+        enemy.orientation = 4;
+    }
     enemy.posX = enemy.posX +1;
     if(mapa[enemy.posY][enemy.posX -1] != '#'){
     mapa[enemy.posY][enemy.posX -1] = ' ';
     }
-    if(mapa[enemy.posY][enemy.posX +1] == '#'){
-        enemy.orientation = 4;
-    }
     }
     if(enemy.orientation == 4){
+    if(mapa[enemy.posY][enemy.posX-1] == '#' || mapa[enemy.posY -1][enemy.posX] == '$'){
+        enemy.orientation = 2;
+    }
     enemy.posX = enemy.posX -1;
     if(mapa[enemy.posY][enemy.posX +1] != '#'){
     mapa[enemy.posY][enemy.posX +1] = ' ';
-    }
-    if(mapa[enemy.posY][enemy.posX-1] == '#'){
-        enemy.orientation = 2;
     }
     }
     }
@@ -486,7 +507,7 @@ void collision(char mapa[fil][col],npc enemy, int * tickRate, player jugador, pr
 }
 
 
-
+/*
 nodoArbolM * iniciArbol()
 {
     nodoArbolM * nodo=NULL;
@@ -506,24 +527,79 @@ nodoArbolM * crearNodoArbol(sala sala)
     aux->der=NULL;
     return aux;
 }
+*/
 
-nodoArbolM * irAsala(nodoArbolM * mapa, int numSala)
-{
-nodoArbolM * rta = iniciArbol();
-if(mapa !=NULL)
-    {
-       if(numSala==mapa->sala.cuarto)
-       {
-       rta=mapa;
-       }
-    if(numSala > mapa->sala.cuarto)
-        {
-            rta=irAsala(mapa->der, numSala);
+void leerArchivo(){
+    FILE * archi = fopen(nombreArchivo, "r");
+
+    char mapa[fil][col];
+    int i= 0;
+    if(archi){
+        while(!feof(archi)){
+            fread(&mapa, fil*col, 1, archi);
+            if(!feof(archi)){
+
+                while(mapa[0][0] != arregloPlantillas[i].nivel && i < 3){
+                    i++;
+                }
+
+                if(mapa[0][0] == arregloPlantillas[i].nivel){
+                    printf("NIVEL %i\n", i);
+                    nodoPlantillas * nuevoNodo = crearNodoPlantillas(mapa);
+                    arregloPlantillas[i].listaMapas = inicarListaPlantilla();
+                    agreagarAlPpioPlantillas(arregloPlantillas[i].listaMapas, nuevoNodo);
+                    printearMapa(mapa);
+
+                }else{
+                    printf("Ocurrio un problema, revisa el archivo de mapas\n");
+
+                }
+            }
+
         }
-    else
-        {
-            rta=irAsala(mapa->izq, numSala);
-        }
+
+        fclose(archi);
+    }
+
+
+
 }
-return rta;
+
+
+nodoPlantillas * inicarListaPlantilla(){
+    return NULL;
+}
+
+nodoPlantillas * crearNodoPlantillas(char mapa[fil][col]){
+    nodoPlantillas * nuevoNodo = (nodoPlantillas*)malloc(sizeof(nodoPlantillas));
+
+    nuevoNodo->sig = NULL;
+    memcpy(nuevoNodo->mapa, mapa, fil*col);
+
+    return nuevoNodo;
+}
+
+nodoPlantillas agreagarAlPpioPlantillas(nodoPlantillas * lista, nodoPlantillas * nuevoNodo){
+    if(lista == NULL){
+        lista = nuevoNodo;
+    }else{
+        nuevoNodo->sig = lista;
+        lista = nuevoNodo;
+    }
+
+    return *lista;
+}
+
+void printearMapa(char mapa[fil][col]){
+     int i, j;
+    printf("%c------------------------------------------------------------------------------------------------%c\n",218, 191);
+    for(i = 0; i<fil; i++){
+        printf("|");
+        for(j = 0; j<col; j++){
+          printf("%c", mapa[i][j]);
+        }
+    printf("|\n");
+}
+    printf("%c------------------------------------------------------------------------------------------------%c\n", 192, 217);
+
 }
