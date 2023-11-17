@@ -393,9 +393,8 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     if(enemy.orientation == 1){
     if(mapa[enemy.posY -1][enemy.posX] == '#' || mapa[enemy.posY -1][enemy.posX] == '$'){
         enemy.orientation = 3;
-    }else{
+    }else
     enemy.posY = enemy.posY -1;
-    }
     if(mapa[enemy.posY+1][enemy.posX] != '#'){
     mapa[enemy.posY+1][enemy.posX] = ' ';
     }
@@ -413,9 +412,8 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     if(enemy.orientation == 2){
     if(mapa[enemy.posY][enemy.posX +1] == '#' || mapa[enemy.posY ][enemy.posX+1] == '$'){
         enemy.orientation = 4;
-    }else{
-    enemy.posX = enemy.posX +1;
     }
+    enemy.posX = enemy.posX +1;
     if(mapa[enemy.posY][enemy.posX -1] != '#'){
     mapa[enemy.posY][enemy.posX -1] = ' ';
     }
@@ -423,9 +421,8 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     if(enemy.orientation == 4){
     if(mapa[enemy.posY][enemy.posX-1] == '#' || mapa[enemy.posY][enemy.posX-1] == '$'){
         enemy.orientation = 2;
-    }else{
-    enemy.posX = enemy.posX -1;
     }
+    enemy.posX = enemy.posX -1;
     if(mapa[enemy.posY][enemy.posX +1] != '#'){
     mapa[enemy.posY][enemy.posX +1] = ' ';
     }
@@ -616,6 +613,7 @@ void spawnearEnemigos(char mapa[fil][col], npc enemys[4]){
 
 
     for(int i = 0; i < 5; i++){
+        printf("AAAAAAAAA\n");
         enemys[i].posY = rand() % ( 24 - 2) + 2;
         enemys[i].posX = rand() % ( 94 - 2) + 2;
         while(mapa[enemys[i].posY][enemys[i].posX] == '#'){
