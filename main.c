@@ -3,15 +3,11 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-//#include <windows.h>
+#include <windows.h>
 
 
 
 //CREAMOS ESTRUCTURAS
-typedef struct{
-    int posY;
-    int posX;
-}camara;
 
 typedef struct{
     int posY;
@@ -26,24 +22,6 @@ typedef struct{
     int attack;
     int potion;
 }player;
-
-typedef struct
-{
-    int cuarto;
-    char mapa[27][96];
-}sala;
-
-typedef struct{
-    sala sala;
-    struct nodoArbolM * izq;
-    struct nodoArbolM * der;
-}nodoArbolM;
-
-typedef struct{
-    int level;
-    nodoArbolM * stages;
-    struct nodoListaN * sig;
-}nodoListaN;
 
 typedef struct Plantillas{
     char nivel;
@@ -65,6 +43,11 @@ typedef struct{
     int hp;
 }npc;
 
+typedef struct nodoPartida{
+    char mapaNodo[28][96];
+    struct nodoPartida * sig;
+}nodoPartida;
+
 //DECLARAMOS CONSTANTES
 const int fil = 28;
 const int col = 96;
@@ -79,7 +62,6 @@ plantillas arregloPlantillas[3];
 
 //PROTOTIPADO
 player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation);
-camara camaraSiguiendoJugador(char mapa[fil][col], camara camarita, player jugador);
 npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proyectile * bullet);
 void fillMap(char mapa[fil][col], char mapaRandom[fil][col]);
 void runPlayer(char mapa[fil][col], player jugador, int * currentOrietation);
@@ -94,7 +76,7 @@ void randomMapSelector(char mapaAux[fil][col], int currLevel);
 int main(){
 
     int eleccion=1;
-
+    system("color");
     player humano;
     player elfo;
     player orco;
@@ -120,10 +102,7 @@ int main(){
     player jugador;
     jugador.posY = 12;
     jugador.posX = 6;
-    camara camarita;
-    camarita.posY = fil/2;
-    camarita.posX = col/2;
-    npc enemys[4];
+    npc enemys[30];
 
     memset(mapa, 32, sizeof(mapa));
 
@@ -134,7 +113,7 @@ int main(){
     int * currentOrientiation = 94;
 
     int * tickRate;
-
+    int cantindadEnemigos = (currLevel + 1) * 5;
 
     printf("Elige tu raza\n\n");
     printf("            Humano       Elfo         Orco ");
@@ -162,9 +141,7 @@ int main(){
     leerArchivo();
     char randomMap[fil][col];
     randomMapSelector(randomMap, currLevel);
-    spawnearEnemigos(randomMap, enemys);
-
-    system("pause");
+    spawnearEnemigos(randomMap, enemys, cantindadEnemigos);
     system("cls");
 
     for(;;){
@@ -172,12 +149,11 @@ int main(){
     system("");
     fillMap(mapa, randomMap);
     jugador = runGameplay(mapa, jugador, &currentOrientiation);
-    for(int i = 0; i<4; i++){
+    for(int i = 0; i<cantindadEnemigos-1; i++){
     enemys[i] = runnpcs(mapa, enemys[i], &tickRate, jugador, &bullet);
     }
-    camarita = camaraSiguiendoJugador(mapa, camarita, jugador);
     runPlayer(mapa, jugador, &currentOrientiation);
-    runMap(mapa, camarita, jugador, &tickRate);
+    runMap(mapa, jugador, &tickRate);
     sistemaDeVida(&humano,&elfo,&orco,eleccion);
     printf("%i", bullet.posY);
     //printf("\x1b[J");
@@ -189,14 +165,14 @@ int main(){
 
 //MUESTRA EL MAPA
 
-void runMap(char mapa[fil][col], camara camarita, player jugador, int * tickRate){
+void runMap(char mapa[fil][col], player jugador, int * tickRate){
     int i, j;
 
     printf("%c------------------------------------------------------------------------------------------------%c %i %i, %i\n",218, 191, jugador.posY, jugador.posX, *tickRate);
-    for(i=0 + camarita.posY ; i<filMostrar + camarita.posY ;i++){
+    for(i=0 ; i<filMostrar;i++){
             printf("|");
 
-        for(j=0 + camarita.posX ; j<colMostrar + camarita.posX ; j++){
+        for(j=0; j<colMostrar; j++){
             printf("%c", mapa[i][j]);
         }
         printf("|\n");
@@ -340,7 +316,7 @@ player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation
     return jugador;
 }
 
-//HACEMOS PAREDES
+//Cargamos la estrcuctura del mapa de una de las plantillas y se la cargamaos al mapa actual
 
 void fillMap(char mapa[fil][col], char mapaRandom[fil][col]){
         int i,j;
@@ -369,16 +345,10 @@ void fillMap(char mapa[fil][col], char mapaRandom[fil][col]){
             mapa[i][j] = '#';
         }
     }
-
+    mapa[13][93] = 175;
+    mapa[14][93] = 175;
 }
 
-//CAMARA QUE SIGUE AL JUGADOR
-
-camara camaraSiguiendoJugador(char mapa[fil][col], camara camarita, player jugador){
-    camarita.posY = 0;
-    camarita.posX = 0;
-    return camarita;
-}
 
 //HACEMOS COSAS CON LOS GUARDIAS
 
@@ -432,9 +402,9 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     }
     }
     if(*tickRate % rand()%15 == 0 && *tickRate != 0){
-        enemy.orientation = rand()%4;
-        if(enemy.orientation ==0){
-            enemy.orientation = 1;
+        enemy.orientation = rand()%5;
+        while(enemy.orientation ==0){
+            enemy.orientation = rand() % 5;
         }
     }
 }
@@ -460,12 +430,13 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     }
 }
 
-    *tickRate = *tickRate + 1; //Tiempo del CPU dividido framerate * 2 porque si no aumenta demaciado rapido
-    //*tickRate = *tickRate +1;
+    *tickRate = *tickRate + 1;
 
     return enemy;
 
 }
+
+//FUNCION DE DISPARO DE LOS ENEMIGOS (PROBABLEMENTE SE DISCONTINUE)
 
 void shootingEnemy(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proyectile * bullet)
 {
@@ -491,34 +462,15 @@ void shootingEnemy(char mapa[fil][col],npc enemy, int * tickRate, player jugador
         }
 }
 
+//LA FUNCION QUE NO HACE NADA
+
 void collision(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proyectile * bullet)
 {
 
 
 }
 
-
-/*
-nodoArbolM * iniciArbol()
-{
-    nodoArbolM * nodo=NULL;
-    return nodo;
-}
-nodoListaN * inicLista()
-{
-    nodoListaN * nodo=NULL;
-    return nodo;
-}
-
-nodoArbolM * crearNodoArbol(sala sala)
-{
-    nodoArbolM * aux= (nodoArbolM*) malloc(sizeof(nodoArbolM));
-    aux->sala=sala;
-    aux->izq=NULL;
-    aux->der=NULL;
-    return aux;
-}
-*/
+//LEE UN ARCHIVO CON PLANTILLAS DE MAPAS
 
 void leerArchivo(){
     FILE * archi = fopen(nombreArchivo, "r");
@@ -535,7 +487,6 @@ void leerArchivo(){
                 }
 
                 if(mapa[0][0] == arregloPlantillas[i].nivel){
-                    printf("NIVEL %i\n", i);
                     nodoPlantillas * nuevoNodo = crearNodoPlantillas(mapa);
                     arregloPlantillas[i].listaMapas = agreagarAlPpioPlantillas(arregloPlantillas[i].listaMapas, nuevoNodo);
                     //printearMapa(arregloPlantillas[i].listaMapas->mapa);
@@ -556,9 +507,13 @@ void leerArchivo(){
 }
 
 
+//LA TIPICA
+
 nodoPlantillas * inicarListaPlantilla(){
     return NULL;
 }
+
+//CREA UN NODO DE PLANTILLAS CON UN MAPA PASADO POR PARAMETRO
 
 nodoPlantillas * crearNodoPlantillas(char mapa[fil][col]){
     nodoPlantillas * nuevoNodo = (nodoPlantillas*)malloc(sizeof(nodoPlantillas));
@@ -568,6 +523,8 @@ nodoPlantillas * crearNodoPlantillas(char mapa[fil][col]){
 
     return nuevoNodo;
 }
+
+//LA TIPICA DEL PRINCIPIO
 
 nodoPlantillas * agreagarAlPpioPlantillas(nodoPlantillas * lista, nodoPlantillas * nuevoNodo){
     if(lista == NULL){
@@ -580,6 +537,8 @@ nodoPlantillas * agreagarAlPpioPlantillas(nodoPlantillas * lista, nodoPlantillas
 
     return lista;
 }
+
+//MUESTRA EL MAPA (ES PARA DEBUGEAR)
 
 void printearMapa(char mapa[fil][col]){
      int i, j;
@@ -595,11 +554,13 @@ void printearMapa(char mapa[fil][col]){
 
 }
 
+//SELECCIONA UN MAPA AL AZAR DE LA LISTA DE MAPAS CON PROBABILIDAD INCREMENTATIVA
+
 void randomMapSelector(char mapaAux[fil][col], int currLevel){
     nodoPlantillas * seg;
     seg = arregloPlantillas[currLevel].listaMapas;
     int i = 5;
-    int randomNumber = rand() & i;
+    int randomNumber = rand() % i;
 
 
     while(randomNumber != 0 && seg->sig != NULL){
@@ -607,27 +568,28 @@ void randomMapSelector(char mapaAux[fil][col], int currLevel){
         randomNumber = rand() % i;
         i--;
     }
-    printearMapa(seg->mapa);
     memcpy(mapaAux, seg->mapa, fil*col);
 
 }
 
-void spawnearEnemigos(char mapa[fil][col], npc enemys[4]){
+//LE ASIGNA UNA POSICION ALEATORIA A LOS ENEMIGOS Y SE ASEGURA DE QUE NO APAREZCAN EN LAS PAREDES
+
+void spawnearEnemigos(char mapa[fil][col], npc enemys[40], int cantidadEnemigos){
 
 
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < cantidadEnemigos; i++){
         enemys[i].posY = rand() % ( 24 - 2) + 2;
         enemys[i].posX = rand() % ( 94 - 2) + 2;
         while(mapa[enemys[i].posY][enemys[i].posX] == '#'){
         enemys[i].posY = rand() % ( 24 - 2) + 2;
-        printf("%i\n", enemys[i].posY);
         enemys[i].posX = rand() % ( 94 - 2) + 2;
-        printf("%i\n", enemys[i].posX);
 
         }
         enemys[i].id = 1;
-        enemys[i].orientation = rand() % 4;
+        enemys[i].orientation = rand() % 5;
 
     }
 
 }
+
+
