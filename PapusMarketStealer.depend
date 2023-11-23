@@ -11,11 +11,12 @@
 	<stdlib.h>
 	<stdio.h>
 
-1700024780 source:d:\descargas\papus_heist\main.c
+1700706182 source:d:\descargas\papus_heist\main.c
 	<stdlib.h>
 	<stdio.h>
 	<time.h>
 	<string.h>
+	<windows.h>
 
 1700228687 source:c:\users\usuario\downloads\elpapuheist-main\elpapuheist-main\main.c
 	<stdlib.h>
@@ -23,9 +24,10 @@
 	<time.h>
 	<string.h>
 
-1700229317 source:d:\descargas\papus_heist\elpapuheist\main.c
+1700334964 source:d:\descargas\papus_heist\elpapuheist\main.c
 	<stdlib.h>
 	<stdio.h>
 	<time.h>
 	<string.h>
+	<windows.h>
 
