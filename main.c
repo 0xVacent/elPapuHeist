@@ -44,8 +44,6 @@ typedef struct{
 }npc;
 
 typedef struct nodoPartida{
-    int nivel;
-    int sala;
     char mapaNodo[28][96];
     struct nodoPartida * sig;
 }nodoPartida;
@@ -56,16 +54,12 @@ const int col = 96;
 const int filMostrar = 28;
 const int colMostrar = 96;
 char nombreArchivo[20] = "mapas.dat";
-
+int currLevel = 0;
 //VARIABLE GLOGAL
 
 int balaCreada  = 0;
 plantillas arregloPlantillas[3];
-int currLevel = 0;
-nodoPartida * partidaActual = NULL;
-int bossCooldown = 5;
-int bossAttackTimeLeft = 0;
-int modoCaos = 0;
+
 //PROTOTIPADO
 player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation);
 npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proyectile * bullet);
@@ -76,9 +70,6 @@ nodoPlantillas * crearNodoPlantillas(char mapa[fil][col]);
 nodoPlantillas * agreagarAlPpioPlantillas(nodoPlantillas * lista, nodoPlantillas * nuevoNodo);
 nodoPlantillas * inicarListaPlantilla();
 void randomMapSelector(char mapaAux[fil][col], int currLevel);
-nodoPartida * crearNodoPartida(char mapaAux[fil][col], int currLevel);
-nodoPartida * agregarAlFinal(nodoPartida * lista, nodoPartida * nuevoNodo);
-nodoPartida * buscarUltimo(nodoPartida * lista, int * sala);
 
 //MAIN
 
@@ -122,8 +113,7 @@ int main(){
     int * currentOrientiation = 94;
 
     int * tickRate;
-    int cantindadEnemigos;
-    cantindadEnemigos = (currLevel + 1) * 5;
+    int cantindadEnemigos = (currLevel + 1) * 5;
 
     printf("Elige tu raza\n\n");
     printf("            Humano       Elfo         Orco ");
@@ -136,33 +126,22 @@ int main(){
     fflush(stdin);
     scanf("%i", &eleccion);
 
-    while(eleccion!=1 && eleccion!=2 && eleccion!=3 && eleccion!=777)
+    while(eleccion!=1 && eleccion!=2 && eleccion!=3)
     {
         printf("\nSu numero es incorrecto, porfavor ingrese 1,2 o 3\n");
         fflush(stdin);
         scanf("%i", &eleccion);
     }
-    if(eleccion == 777){
-        modoCaos = 1;
-        eleccion = 1;
-    }
+
 
     system("cls");
 
     //Organizamos el mapa y sus cosas
 
-
-
-
     leerArchivo();
     char randomMap[fil][col];
     randomMapSelector(randomMap, currLevel);
-    nodoPartida * nuevaHabitacion = crearNodoPartida(randomMap, currLevel);
-    partidaActual = agregarAlFinal(partidaActual,nuevaHabitacion);
     spawnearEnemigos(randomMap, enemys, cantindadEnemigos);
-    int sala = 1;
-
-    nodoPartida * ultimoNodo = buscarUltimo(partidaActual, &sala);
     system("cls");
 
     for(;;){
@@ -174,24 +153,9 @@ int main(){
     enemys[i] = runnpcs(mapa, enemys[i], &tickRate, jugador, &bullet);
     }
     runPlayer(mapa, jugador, &currentOrientiation);
-    runMap(mapa, jugador, &tickRate,ultimoNodo);
+    runMap(mapa, jugador, &tickRate);
     sistemaDeVida(&humano,&elfo,&orco,eleccion);
     printf("%i", bullet.posY);
-
-    if(mapa[jugador.posY][jugador.posY] == mapa[13][93] || mapa[jugador.posY][jugador.posY] == mapa[14][93]){
-        if(ultimoNodo->sala >= 3){
-            currLevel = currLevel + 1;
-        }
-        cantindadEnemigos = (currLevel + 1) * 5;
-        if(currLevel == 2){
-            cantindadEnemigos = 2;
-        }
-        pasarDeHabitacion(randomMap, partidaActual, enemys, cantindadEnemigos);
-
-        jugador.posY = 12;
-        jugador.posX = 6;
-    }
-
     //printf("\x1b[J");
     }
     return 0;
@@ -201,10 +165,10 @@ int main(){
 
 //MUESTRA EL MAPA
 
-void runMap(char mapa[fil][col], player jugador, int * tickRate, nodoPartida * ultimoNodo){
+void runMap(char mapa[fil][col], player jugador, int * tickRate){
     int i, j;
 
-    printf("%c------------------------------------NIVEL:%i-SALA:%i----------------------------------------------%c %i %i, %i\n", 218, currLevel + 1,ultimoNodo->sala, 191, jugador.posY, jugador.posX, *tickRate);
+    printf("%c------------------------------------------------------------------------------------------------%c %i %i, %i\n",218, 191, jugador.posY, jugador.posX, *tickRate);
     for(i=0 ; i<filMostrar;i++){
             printf("|");
 
@@ -349,12 +313,6 @@ player runGameplay(char mapa[fil][col], player jugador, int * currentOrientation
         *currentOrientation = 60;
     }
 
-    if(GetKeyState('L') & 0x8000){
-        mapa[jugador.posY][jugador.posX] = ' ';
-        jugador.posY = 13;
-        jugador.posX = 91;
-    }
-
     return jugador;
 }
 
@@ -387,7 +345,6 @@ void fillMap(char mapa[fil][col], char mapaRandom[fil][col]){
             mapa[i][j] = '#';
         }
     }
-
     mapa[13][93] = 175;
     mapa[14][93] = 175;
 }
@@ -452,7 +409,7 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     }
 }
 
-    // Enemigo que te sigue pegado a la pared O_O (Descartado Totalmente)
+    // Enemigo que te sigue pegado a la pared O_O
 
     else if(enemy.id == 2){
         mapa[enemy.posY][enemy.posX] = '$';
@@ -472,120 +429,6 @@ npc runnpcs(char mapa[fil][col],npc enemy, int * tickRate, player jugador, proye
     }
     }
 }
-    else if(enemy.id == 3){
-        mapa[enemy.posY][enemy.posX] = 02;
-
-
-
-
-        if(bossAttackTimeLeft == 0 && bossCooldown != 0){
-
-        if(*tickRate % 5 == 0){
-            bossCooldown = bossCooldown -1;
-            if(enemy.orientation == 1){
-            if(mapa[enemy.posY -1][enemy.posX] == '#' || mapa[enemy.posY -1][enemy.posX] == '$'){
-                enemy.orientation = 3;
-            }else{
-            enemy.posY = enemy.posY -1;
-            }
-            if(mapa[enemy.posY+1][enemy.posX] != '#'){
-            mapa[enemy.posY+1][enemy.posX] = ' ';
-            }
-           }
-            if(enemy.orientation == 3){
-            if(mapa[enemy.posY +1][enemy.posX] == '#' || mapa[enemy.posY +1][enemy.posX] == '$'){
-                enemy.orientation = 1;
-            }else{
-            enemy.posY = enemy.posY +1;
-            }
-            if(mapa[enemy.posY-1][enemy.posX] != '#'){
-            mapa[enemy.posY-1][enemy.posX] = ' ';
-            }
-            }
-            if(enemy.orientation == 2){
-            if(mapa[enemy.posY][enemy.posX +1] == '#' || mapa[enemy.posY ][enemy.posX+1] == '$'){
-                enemy.orientation = 4;
-            }else{
-            enemy.posX = enemy.posX +1;
-            }
-            if(mapa[enemy.posY][enemy.posX -1] != '#'){
-            mapa[enemy.posY][enemy.posX -1] = ' ';
-            }
-            }
-            if(enemy.orientation == 4){
-            if(mapa[enemy.posY][enemy.posX-1] == '#' || mapa[enemy.posY][enemy.posX-1] == '$'){
-                enemy.orientation = 2;
-            }else{
-            enemy.posX = enemy.posX -1;
-            }
-            if(mapa[enemy.posY][enemy.posX +1] != '#'){
-            mapa[enemy.posY][enemy.posX +1] = ' ';
-            }
-            }
-            }
-            if(*tickRate % rand()%15 == 0 && *tickRate != 0){
-                enemy.orientation = rand()%5;
-                while(enemy.orientation ==0){
-                    enemy.orientation = rand() % 5;
-                }
-            }
-        }else{
-            mapa[enemy.posY][enemy.posX] = 01;
-            if(bossAttackTimeLeft == 0){
-            bossAttackTimeLeft = 15;
-            }
-            if(bossAttackTimeLeft > 5){
-            for(int i = 2 ; i<enemy.posY; i++){
-                if(mapa[i][enemy.posX] != '#' && mapa[i][enemy.posX] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[i][enemy.posX] = '|';
-                }
-            }
-            for(int i = enemy.posY + 1 ; i<fil-2; i++){
-                if(mapa[i][enemy.posX] != '#' && mapa[i][enemy.posX] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[i][enemy.posX] = '|';
-                }
-            }
-
-            for(int i = 2 ; i<enemy.posX; i++){
-                if(mapa[enemy.posY][i] != '#' && mapa[enemy.posY][i] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[enemy.posY][i] = '-';
-                }
-            }
-            for(int i = enemy.posX + 1 ; i<col-2; i++){
-                if(mapa[enemy.posY][i] != '#' && mapa[enemy.posY][i] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[enemy.posY][i] = '-';
-                }
-            }
-            }else{
-            for(int i = 2 ; i<enemy.posY; i++){
-                if(mapa[i][enemy.posX] != '#' && mapa[i][enemy.posX] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[i][enemy.posX] = '$';
-                }
-            }
-            for(int i = enemy.posY + 1 ; i<fil-2; i++){
-                if(mapa[i][enemy.posX] != '#' && mapa[i][enemy.posX] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[i][enemy.posX] = '$';
-                }
-            }
-
-            for(int i = 2 ; i<enemy.posX; i++){
-                if(mapa[enemy.posY][i] != '#' && mapa[enemy.posY][i] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[enemy.posY][i] = '$';
-                }
-            }
-            for(int i = enemy.posX + 1 ; i<col-2; i++){
-                if(mapa[enemy.posY][i] != '#' && mapa[enemy.posY][i] != mapa[13][93] && mapa[i][enemy.posX] != mapa[14][93]){
-                mapa[enemy.posY][i] = '$';
-                }
-            }
-
-
-            }
-            bossAttackTimeLeft = bossAttackTimeLeft -1;
-            bossCooldown = 10;
-        }
-    }
-
 
     *tickRate = *tickRate + 1;
 
@@ -742,11 +585,7 @@ void spawnearEnemigos(char mapa[fil][col], npc enemys[40], int cantidadEnemigos)
         enemys[i].posX = rand() % ( 94 - 2) + 2;
 
         }
-        if(currLevel == 2 || modoCaos == 1){
-            enemys[i].id = 3;
-        }else{
         enemys[i].id = 1;
-        }
         enemys[i].orientation = rand() % 5;
 
     }
@@ -754,52 +593,3 @@ void spawnearEnemigos(char mapa[fil][col], npc enemys[40], int cantidadEnemigos)
 }
 
 
-nodoPartida * crearNodoPartida(char mapaAux[fil][col], int currLevel){
-    nodoPartida * nuevoNodoPartida = (nodoPartida*) malloc(sizeof(nodoPartida));
-
-    nuevoNodoPartida->nivel = currLevel;
-    nuevoNodoPartida->sala = NULL;
-    memcpy(nuevoNodoPartida->mapaNodo, mapaAux, fil*col);
-    nuevoNodoPartida->sig = NULL;
-
-    return nuevoNodoPartida;
-}
-
-nodoPartida * agregarAlFinal(nodoPartida * lista, nodoPartida * nuevoNodo){
-    nodoPartida * ultimo = NULL;
-
-    int sala = 1;
-
-    if(lista == NULL){
-        lista = nuevoNodo;
-    }else{
-        ultimo = buscarUltimo(lista, &sala);
-        ultimo->sig = nuevoNodo;
-    }
-    lista->sala = sala;
-
-    return lista;
-}
-
-nodoPartida * buscarUltimo(nodoPartida * lista, int * sala){
-    nodoPartida * rta = lista;
-
-    if(lista!=NULL){
-        while(rta->sig!=NULL){
-            rta = rta->sig;
-            *sala = *sala + 1;
-        }
-    *sala = *sala+1;
-    }
-    if(*sala > 3){
-        *sala = *sala - 3 * currLevel;
-    }
-    return rta;
-}
-
-void pasarDeHabitacion(char randomMap[fil][col], nodoPartida * partidaActual, npc enemys[30], int cantindadEnemigos){
-    randomMapSelector(randomMap, currLevel);
-    nodoPartida * nuevaHabitacion = crearNodoPartida(randomMap, currLevel);
-    partidaActual = agregarAlFinal(partidaActual,nuevaHabitacion);
-    spawnearEnemigos(randomMap, enemys, cantindadEnemigos);
-}
