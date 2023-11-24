@@ -11,7 +11,7 @@
 	<stdlib.h>
 	<stdio.h>
 
-1700813014 source:d:\descargas\papus_heist\main.c
+1700811028 source:d:\descargas\papus_heist\main.c
 	"mapCreator.h"
 	<stdlib.h>
 	<stdio.h>
@@ -62,4 +62,36 @@
 
 1700791952 d:\descargas\papus_heist\mapcreator.h
 	<windows.h>
+
+1700811133 source:c:\users\confi\desktop\elpapuheist-main\libusuario.c
+	"libUsuario.h"
+
+1700811133 c:\users\confi\desktop\elpapuheist-main\libusuario.h
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+
+1700811133 source:c:\users\confi\desktop\elpapuheist-main\mapcreator.c
+	"mapCreator.h"
+	<stdlib.h>
+	<stdio.h>
+	"color.h"
+	<string.h>
+
+1700811133 c:\users\confi\desktop\elpapuheist-main\mapcreator.h
+	<windows.h>
+
+1700811133 c:\users\confi\desktop\elpapuheist-main\color.h
+
+1700813528 source:c:\users\confi\desktop\elpapuheist-main\main.c
+	"mapCreator.h"
+	<stdlib.h>
+	<stdio.h>
+	<time.h>
+	<string.h>
+	<windows.h>
+	<math.h>
+	"color.h"
+	"libUsuario.h"
 
