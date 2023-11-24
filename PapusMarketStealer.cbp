@@ -31,9 +31,18 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="color.h" />
+		<Unit filename="libUsuario.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libUsuario.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="mapCreator.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mapCreator.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
