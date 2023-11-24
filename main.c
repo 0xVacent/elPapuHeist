@@ -148,7 +148,7 @@ int main(){
 
 
 
-
+    PlaySound("C:\\Users\\confi\\Desktop\\elPapuHeist-test\\level1.wav", NULL, SND_ASYNC);
     leerArchivo();
     char randomMap[fil][col];
     randomMapSelector(randomMap, currLevel);
@@ -177,11 +177,16 @@ int main(){
     if(mapa[jugador.posY][jugador.posY] == mapa[13][93] || mapa[jugador.posY][jugador.posY] == mapa[14][93]){
         if(currLevel != 2){
         if(ultimoNodo->sala >= 3){
+            PlaySound(NULL, 0, 0);
             currLevel = currLevel + 1;
+            PlaySound("C:\\Users\\confi\\Desktop\\elPapuHeist-test\\level2.wav", NULL, SND_ASYNC);
         }
+
         cantindadEnemigos = (currLevel + 1) * 5;
         cantidadEnemigosActuales = cantindadEnemigos-1;
         if(currLevel == 2){
+            PlaySound(NULL, 0, 0);
+            PlaySound("C:\\Users\\confi\\Desktop\\elPapuHeist-test\\FinalBoss.wav", NULL, SND_ASYNC);
             cantindadEnemigos = 2;
             cantidadEnemigosActuales = cantindadEnemigos-1;
         }
@@ -206,7 +211,9 @@ int main(){
     if(bossHP <= 0){
         Sleep(1000);
         system("cls");
+        PlaySound("C:\\Users\\confi\\Desktop\\elPapuHeist-test\\JEDE.wav", NULL, SND_ASYNC);
         endScreen(mapa);
+
         system("pause");
         return 0;
     }
@@ -307,6 +314,7 @@ void sistemaDeVida (player * jugador, int eleccion, char mapa[fil][col])
             Sleep(1000);
             system("cls");
             defeatScreen(mapa);
+            PlaySound("C:\\Users\\confi\\Desktop\\elPapuHeist-test\\Perdiste.wav", NULL, SND_ASYNC);
             system("pause");
             return 0;
         }
